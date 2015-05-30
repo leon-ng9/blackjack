@@ -54,7 +54,7 @@ int requestAction(void); // returns HIT or STAND as next action by user
 int ifBust (Player currPlayer);
 // calculates value of hand; if over 21 then returns true (instant lose)
 int getValueOfHand (Player currPlayer);
-// gets the value of a player's hand assuming A = 1
+// gets the value of a player's hand 
 void makeNextAIAction(Player dealer, Pack deck); //makes next move by AI
 void revealHands (Player dealer, Player user);
 // similar to displayHands except used at end to determine winner
@@ -68,7 +68,7 @@ int main (int argc, char* argv[]) {
    char requestRules;
    printf ("Would you like to see the rules? (Y/N): ");
    scanf ("%c", &requestRules);
-   if (requestRules == 'Y' || requestRules == 'y') {                     // accounts for likelihood of users entering lower/upper case
+   if (requestRules != 'n' && requestRules != 'N') {                     // accounts for likelihood of users entering lower/upper case
       displayRules();
    }
    printf ("\n");
@@ -77,12 +77,17 @@ int main (int argc, char* argv[]) {
    Player user = newPlayer();
    Player dealer = newPlayer();
    Pack deck = newPack();
+   printf ("%s\n", deck->head->title);
+   printf ("%s\n", deck->head->next->title);
+   printf ("%s\n", deck->head->next->next->title);
+   printf ("%s\n", deck->head->next->next->next->title);
 
    int gameRunning = TRUE;
    int bust = FALSE;
 
-   dealHand(user, deck);
-   dealHand(dealer, deck);
+   dealHand (user, deck);
+   dealHand (dealer, deck);
+   revealHands (dealer, user);
    while (gameRunning == TRUE && bust == FALSE) {
       displayHands(dealer, user);
       int action = requestAction();
@@ -94,6 +99,10 @@ int main (int argc, char* argv[]) {
          makeNextAIAction (dealer, deck);
          bust = ifBust(dealer);
          gameRunning = FALSE;
+      }
+
+      if (gameRunning == TRUE) {
+         displayHands(dealer, user);
       }
    }
 
@@ -168,231 +177,252 @@ Card newCard (char *title, int value) {
 Pack newPack (void) {
    Pack new = malloc (sizeof (struct _pack));
 
-   Card nextCard = newCard ("A (Spades)", 1);
+   Card nextCard = newCard ("A ", 11);
    new->head = nextCard;
 
    Card currentCard = new->head;
 
-   nextCard = newCard ("A (Clubs)", 1);
+   nextCard = newCard ("A ", 11); 
    currentCard->next = nextCard;;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("A (Diamonds)", 1);
+   nextCard = newCard ("A ", 11);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("A (Hearts)", 1);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("2 (Spades)", 2);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("2 (Clubs)", 2);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("2 (Diamonds)", 2);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("2 (Hearts)", 2);
+   nextCard = newCard ("A ", 11);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("3 (Spades)", 3);
+   nextCard = newCard ("2 ", 2);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("3 (Clubs)", 3);
+   nextCard = newCard ("2 ", 2);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("3 (Diamonds)", 3);
+   nextCard = newCard ("2 ", 2);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("3 (Hearts)", 3);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("4 (Spades)", 4);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("4 (Clubs)", 4);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("4 (Diamonds)", 4);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("4 (Hearts)", 4);
+   nextCard = newCard ("2 ", 2);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("5 (Spades)", 5);
+   nextCard = newCard ("3 ", 3);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("5 (Clubs)", 5);
+   nextCard = newCard ("3 ", 3);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("5 (Diamonds)", 5);
+   nextCard = newCard ("3 ", 3);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("5 (Hearts)", 5);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("6 (Spades)", 6);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("6 (Clubs)", 6);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("6 (Diamonds)", 6);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("6 (Hearts)", 6);
+   nextCard = newCard ("3 ", 3);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("7 (Spades)", 7);
+   nextCard = newCard ("4 ", 4);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("7 (Clubs)", 7);
+   nextCard = newCard ("4 ", 4);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("7 (Diamonds)", 7);
+   nextCard = newCard ("4 ", 4);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("7 (Hearts)", 7);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("8 (Spades)", 8);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("8 (Clubs)", 8);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("8 (Diamonds)", 8);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("8 (Hearts)", 8);
+   nextCard = newCard ("4 ", 4);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("9 (Spades)", 9);
+   nextCard = newCard ("5 ", 5);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("9 (Clubs)", 9);
+   nextCard = newCard ("5 ", 5);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("9 (Diamonds)", 9);
+   nextCard = newCard ("5 ", 5);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("9 (Hearts)", 9);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("10 (Spades)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("10 (Clubs)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("10 (Diamonds)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("10 (Hearts)", 10);
+   nextCard = newCard ("5 ", 5);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("J (Spades)", 10);
+   nextCard = newCard ("6 ", 6);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("J (Clubs)", 10);
+   nextCard = newCard ("6 ", 6);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("J (Diamonds)", 10);
+   nextCard = newCard ("6 ", 6);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("J (Hearts)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-
-   nextCard = newCard ("Q (Spades)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("Q (Clubs)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("Q (Diamonds)", 10);
-   currentCard->next = nextCard;
-   currentCard = currentCard->next;
-
-   nextCard = newCard ("Q (Hearts)", 10);
+   nextCard = newCard ("6 ", 6);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
 
-   nextCard = newCard ("K (Spades)", 10);
+   nextCard = newCard ("7 ", 7);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("K (Clubs)", 10);
+   nextCard = newCard ("7 ", 7);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("K (Diamonds)", 10);
+   nextCard = newCard ("7 ", 7);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
-   nextCard = newCard ("K (Hearts)", 10);
+   nextCard = newCard ("7 ", 7);
    currentCard->next = nextCard;
    currentCard = currentCard->next;
 
+
+   nextCard = newCard ("8 ", 8);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("8 ", 8);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("8 ", 8);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("8 ", 8);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+
+   nextCard = newCard ("9 ", 9);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("9 ", 9);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("9 ", 9);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("9 ", 9);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+
+   nextCard = newCard ("10 ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("10 ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("10 ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("10 ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+
+   nextCard = newCard ("J ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("J ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("J ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("J ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+
+   nextCard = newCard ("Q ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("Q ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("Q ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("Q ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+
+   nextCard = newCard ("K ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("K ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("K ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
+
+   nextCard = newCard ("K ", 10);
+   currentCard->next = nextCard;
+   currentCard = currentCard->next;
 
    currentCard->next = NULL;
 
-   new->numCardsLeft = 52;
+   // add ♠♣♦♥ to the title names
+   int asciiCount = 6; // alternates between ASCII 
+                       //value of of ♠(6), ♣(5), ♦(4), ♥(3)
+   Card curr = new->head;
+   while (curr != NULL) {
+      if (curr->title[0] == '1') {
+         // card 10 requires different treatment as 10 is two char's
+         curr->title[3] = asciiCount;
+         curr->title[4] = 0;
+      } else {
+         curr->title[2] = asciiCount;
+         curr->title[3] = 0;
+      }
+
+      curr = curr->next;
+      asciiCount--;
+
+      if (asciiCount < 3) { // loops ASCII values of card signs
+         asciiCount = 6;
+      }
+   }
+
+   new->numCardsLeft = 52; //number of cards in deck
 
    return new;
 } 
@@ -459,6 +489,15 @@ int requestAction(void) {
 int ifBust (Player currPlayer) {
    int isHandBust = FALSE;
 
+   if (getValueOfHand (currPlayer) > 21) {
+      isHandBust = TRUE;
+   }
+
+   return isHandBust;
+}
+
+// gets the value of a player's hand 
+int getValueOfHand (Player currPlayer) {
    int totalValue = 0;
    int count = 0;
    while (count < currPlayer->numCards) {
@@ -467,19 +506,16 @@ int ifBust (Player currPlayer) {
    }
 
    if (totalValue > 21) {
-      isHandBust = TRUE;
-   }
+      // scan through to check if hand contains A as it will then
+      // be forced from value 11 to 1
+      count = 0;
+      while (count < currPlayer->numCards && totalValue > 21) {
+         if (currPlayer->hand[count]->value == 11) {
+            totalValue -= 10;
+         }
+         count++;
+      }
 
-   return isHandBust;
-}
-
-// gets the value of a player's hand assuming A = 1
-int getValueOfHand (Player currPlayer) {
-   int totalValue = 0;
-   int count = 0;
-   while (count < currPlayer->numCards) {
-      totalValue += currPlayer->hand[count]->value;
-      count++;
    }
 
    return totalValue;
