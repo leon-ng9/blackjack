@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX_TITLE 18
 #define MAX_SUIT
@@ -398,6 +399,7 @@ Pack newPack (void) {
 
 // deals a card to the player's hand
 void dealHand (Player currPlayer, Pack deck) {
+   srand(time(NULL));
    int chosenIndex = (rand())%(deck->numCardsLeft);
 
    Card chosen;
