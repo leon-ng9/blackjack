@@ -11,7 +11,6 @@
 #define MAX_SUIT
 #define MAX_CARDS 12 
 #define MAX_NAME 15
-#define MAX_VALUE 21 // max value of hand is 21
 
 #define SUIT_SIZE 13
 #define DECK_SIZE 52
@@ -31,13 +30,13 @@ typedef struct _card *Card;
 typedef struct _card {
    char title[MAX_TITLE]; //e.g. Queen of Diamonds
    int value; //1-10
+   int value2; //11 for ace otherwise 0
    Card next; // for my pack linked list
 } card;
 
 typedef struct _player {
    Card hand[MAX_CARDS];
    int numCards;
-   double cash;
 } *Player;
 
 typedef struct _pack {
@@ -56,8 +55,6 @@ void displayHands(Player dealer, Player user); // displays all hands
 int requestAction(void); // returns HIT or STAND as next action by user
 int ifBust (Player currPlayer);
 // calculates value of hand; if over 21 then returns true (instant lose)
-int ifBlackjack (Player currPlayer);
-// checks if player has J/Q/K + A (auto win)
 int getValueOfHand (Player currPlayer);
 // gets the value of a player's hand 
 void makeNextAIAction(Player dealer, Pack deck); //makes next move by AI
@@ -66,8 +63,6 @@ void revealHands (Player dealer, Player user);
 // (it shows dealers' hand)
 int determineWinner (Player dealer, Player user);
 // determines winner based on current hand of dealer and player
-int freeGame (Player dealer, Player user, Pack deck);
-// frees everything malloced for the game
 
 
 int main (int argc, char* argv[]) {
@@ -85,92 +80,54 @@ int main (int argc, char* argv[]) {
    Player dealer = newPlayer();
    Pack deck = newPack();
 
-   // Play the game
-      double betAmount;
-   while (TRUE) {
-      // reset hands and pack
-      user->numCards = 0;
-      dealer->numCards = 0;
-      deck = newPack();
+   int gameRunning = TRUE;
+   int bust = FALSE;
 
-      printf ("You currently have $%.2lf\n", user->cash);
-      printf ("Please enter your bet size: ");
-      scanf ("%lf", &betAmount);
-
-      if (betAmount < 0) {
-         betAmount = 0;
-      }
-      else if (betAmount > user->cash) {
-         betAmount = user->cash;
-      }
-
-      user->cash -= betAmount;
-
-      int gameRunning = TRUE;
-      dealHand (user, deck);
-      dealHand (dealer, deck);
-      revealHands(dealer, user);
-      printf ("Cash in bank: $%.2lf, Cash in play: $%.2lf\n",
-         user->cash, betAmount);
-
-      while (gameRunning == TRUE) {
-         int action = requestAction();
-
-         if (action == HIT) {
-            dealHand (user, deck);
-         } else {
-            // action == STAND
-            while (getValueOfHand(dealer) < 17 
-                  && ifBlackjack(dealer) == FALSE) {
-               dealHand (dealer, deck);
-            }
-            gameRunning = FALSE;
-         }
-
-         if (ifBust(user) == TRUE) {
-            gameRunning = FALSE;
-         }
-
-         if (ifBlackjack (user)) {
-            gameRunning = FALSE;
-         }
-
-         revealHands(dealer, user);
+   dealHand (user, deck);
+   dealHand (dealer, deck);
+   revealHands (dealer, user);
+   while (gameRunning == TRUE && bust == FALSE) {
+      displayHands(dealer, user);
+      int action = requestAction();
+      if (action == HIT) {
+         dealHand (user, deck);
+         bust = ifBust(user);
+      } else {
+         // action == STAND
+         makeNextAIAction (dealer, deck);
+         bust = ifBust(dealer);
+         gameRunning = FALSE;
       }
 
-      printf ("\n");
-      
-      if (ifBlackjack (user) == TRUE &&
-         ifBlackjack (dealer) == TRUE) {
-         printf ("Two blackjacks!? No winner.\n");
+      if (gameRunning == TRUE) {
+         displayHands(dealer, user);
       }
-      else if (ifBlackjack(user) == TRUE) {
-         printf ("Blackjack! You win!\n");
-         user->cash += 2.5 * betAmount;
-      }
-      else if (ifBlackjack(dealer) == TRUE) {
-         printf ("Dealer has blackjack! You lose.");
-      }
-      else if (ifBust(user) == TRUE) {
-         printf ("Bust! You lose.\n");
-      } 
-      else if (ifBust(dealer) == TRUE) {
-         printf ("The dealer has busted! You win!\n");
-         user->cash += 2 * betAmount;
-      }
-      else if (determineWinner(dealer, user) == NO_ONE) {
-         printf ("Equal hands! No winner.\n");
-      }
-      else if (determineWinner(dealer, user) == USER) {
-         printf ("You beat the dealer!\n");
-         user->cash += 2 * betAmount;
-      }
-      else { // (determineWinner (dealer, user) == DEALER) 
-         printf ("You lost to the dealer.\n");
-      }
-
-      printf ("\n");
    }
+
+   printf ("\n");
+   if (bust == TRUE) {
+      displayHands(dealer, user);
+      if (getValueOfHand(user) > 21) {
+         printf ("Bust! You lose.\n");
+      } else {
+         printf ("Dealer has busted! You win!\n");
+      }
+   } else {
+      revealHands(dealer, user);
+      int winner = determineWinner(dealer, user);
+      if (winner == NO_ONE) {
+         printf ("It's a draw!\n");
+      } 
+      else if (winner == USER) {
+         printf ("You beat the dealer!\n");
+      } 
+      else {
+         // winner == DEALER
+         printf ("You lost to the dealer!\n");
+      }
+   }
+
+   
 
    return EXIT_SUCCESS;
 }
@@ -178,7 +135,6 @@ int main (int argc, char* argv[]) {
 // displays rules of the game
 void displayRules (void) {
    char* message =
-      "\n"
       "1. You will play against an AI dealer \n"
       "2. Card values:\n"
       "   Ace: 1 or 11\n"
@@ -187,12 +143,7 @@ void displayRules (void) {
       "3. Each turn you can either hit (add a card to your hand)\n"
       "   or stand (keep your hand)\n"
       "4. The aim is to get as close as possible to 21 without going\n"
-      "   over. If you go over 21 you instantly lose.\n"
-      "\n"
-      "Payouts:\n"
-      "Win: Win 2x of what you bet\n"
-      "Blackjack win: Win 2.5x of what you bet\n"
-      "Lose: Lose what you bet\n";
+      "   over. If you go over 21 you instantly lose.";
 
       printf ("%s\n", message);
 }
@@ -201,7 +152,7 @@ void displayRules (void) {
 Player newPlayer (void) {
    Player new = malloc (sizeof (struct _player));
    new->numCards = 0;
-   new->cash = 500;
+
    return new;
 }
 
@@ -213,7 +164,9 @@ Card newCard (char *title, int value) {
 
    if (value == 1) {
       // ace card
-      new->value = 11;
+      new->value2 = 11;
+   } else {
+      new->value2 = 0;
    }
 
    new->next = NULL;
@@ -235,16 +188,15 @@ Pack newPack (void) {
 
    char titles[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 
                    'J', 'Q', 'K'}; // will do 10 manually after
-   int cardCount = 1; // increments until 52
-   int titleCount = 0; // increments through titles[] array
-   int suitASCII = 4; // increments ♣,♦,♥,♠,...
+   int cardCount = 1;
+   int titleCount = 0;
+   int suitASCII = 4; // ♣ ASCII value
    while (cardCount <= DECK_SIZE - 4) { // -4 since missing 10's
-
       // setting up next card to add to linked list
       nextCard = malloc (sizeof (struct _card));
       if (0 <= titleCount && titleCount <= 8) {
          // Ace to 9 have values corresponding to their numbers (A = 1)
-         nextCard->value = titleCount + 1;
+         nextCard->value = titleCount;
       } else {
          // J, Q, K have value 10
          nextCard->value = 10;
@@ -359,26 +311,12 @@ int requestAction(void) {
 int ifBust (Player currPlayer) {
    int isHandBust = FALSE;
 
-   if (getValueOfHand (currPlayer) > MAX_VALUE) {
+   if (getValueOfHand (currPlayer) > 21) {
       isHandBust = TRUE;
    }
 
    return isHandBust;
 }
-
-// checks if player has J/Q/K + A (auto win)
-int ifBlackjack (Player currPlayer) {
-   int hasBlackjack = FALSE;
-
-   if (currPlayer->numCards == 2 && 
-      getValueOfHand(currPlayer) == MAX_VALUE) {
-      // only possible if J/Q/K + A
-      hasBlackjack = TRUE;
-   }
-
-   return hasBlackjack;
-}
-
 
 // gets the value of a player's hand 
 int getValueOfHand (Player currPlayer) {
@@ -389,11 +327,11 @@ int getValueOfHand (Player currPlayer) {
       count++;
    }
 
-   if (totalValue > MAX_VALUE) {
+   if (totalValue > 21) {
       // scan through to check if hand contains A as it will then
       // be forced from value 11 to 1
       count = 0;
-      while (count < currPlayer->numCards && totalValue > MAX_VALUE) {
+      while (count < currPlayer->numCards && totalValue > 21) {
          if (currPlayer->hand[count]->value == 11) {
             totalValue -= 10;
          }
