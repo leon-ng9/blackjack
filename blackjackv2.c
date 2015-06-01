@@ -83,11 +83,13 @@ int main (int argc, char* argv[]) {
 
    Player user = newPlayer();
    Player dealer = newPlayer();
-   Pack deck = newPack();
-
+   Pack deck;
    // Play the game
-      double betAmount;
-   while (TRUE) {
+   double betAmount;
+   int turnCount = 1;
+   while (user->cash > 0) {
+      printf ("Round: %d\n", turnCount);
+
       // reset hands and pack
       user->numCards = 0;
       dealer->numCards = 0;
@@ -143,6 +145,7 @@ int main (int argc, char* argv[]) {
       if (ifBlackjack (user) == TRUE &&
          ifBlackjack (dealer) == TRUE) {
          printf ("Two blackjacks!? No winner.\n");
+         user->cash += betAmount;
       }
       else if (ifBlackjack(user) == TRUE) {
          printf ("Blackjack! You win!\n");
@@ -160,6 +163,7 @@ int main (int argc, char* argv[]) {
       }
       else if (determineWinner(dealer, user) == NO_ONE) {
          printf ("Equal hands! No winner.\n");
+         user->cash += betAmount;
       }
       else if (determineWinner(dealer, user) == USER) {
          printf ("You beat the dealer!\n");
@@ -171,7 +175,11 @@ int main (int argc, char* argv[]) {
 
       printf ("\n");
       freeGame (dealer, user, deck);
+
+      turnCount++;
    }
+
+   printf ("Insufficient funds to continue playing.\n");
 
    return EXIT_SUCCESS;
 }
@@ -243,7 +251,11 @@ Pack newPack (void) {
 
       // setting up next card to add to linked list
       nextCard = malloc (sizeof (struct _card));
-      if (0 <= titleCount && titleCount <= 8) {
+      if (titleCount == 0) {
+         // Ace card
+         nextCard->value = 11;
+      }
+      else if (1 <= titleCount && titleCount <= 8) {
          // Ace to 9 have values corresponding to their numbers (A = 1)
          nextCard->value = titleCount + 1;
       } else {
